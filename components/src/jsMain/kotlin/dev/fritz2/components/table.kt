@@ -330,7 +330,7 @@ class TableComponent<T> {
             }
 
             private var sorting: Sorting = Sorting.NONE
-            fun sorting(value: Companion.() -> Sorting) {
+            fun sorting(value: () -> Sorting) {
                 sorting = value()
             }
 
@@ -643,19 +643,21 @@ fun <T, I> RenderContext.table(
         if (component.captionPlacement == TableComponent.Companion.CaptionPlacement.TOP) {
             component.caption?.invoke(this)
         }
+        /*
         component.configStore.data.render {
             console.info(it)
         }
+         */
         (::thead.styled() {
             component.defaultTHeadStyle()
         }) {
             tr {
-                config.renderEach { colConfig ->
+                config.renderEach(component.configIdProvider) { colConfig ->
                     val colConfigStore = component.configStore.sub(colConfig, component.configIdProvider)
                     val sortDirection = colConfigStore.sub(sortDirectionLens)
-                    (::th.styled {
+                    (::th.styled(colConfig.stylingHead) {
                         component.defaultThStyle()
-                        colConfig.stylingHead()
+
                     })  {
                         colConfig.contentHead(this, colConfig)
 
@@ -663,27 +665,28 @@ fun <T, I> RenderContext.table(
                         if (component.sorter != null
                             && colConfig.sorting != TableComponent.Companion.Sorting.DISABLED
                         ) {
-                            (::div.styled(TableComponent.sorterStyle) {}){
-                                icon({
-                                    TableComponent.sortDirectionIcon()
-                                    if (colConfig.sorting == TableComponent.Companion.Sorting.ASC) {
-                                        TableComponent.sortDirectionSelected()
-                                    }
-                                }) { fromTheme { triangleUp } }
-                                icon({
-                                    TableComponent.sortDirectionIcon()
-                                    if (colConfig.sorting == TableComponent.Companion.Sorting.DESC) {
-                                        TableComponent.sortDirectionSelected()
-                                    }
-                                }) { fromTheme { triangleDown } }
-                                clicks.events.map {
-                                    console.info(colConfig.sorting)
-                                    when (colConfig.sorting) {
-                                        TableComponent.Companion.Sorting.ASC -> TableComponent.Companion.Sorting.DESC
-                                        TableComponent.Companion.Sorting.DESC -> TableComponent.Companion.Sorting.NONE
-                                        else -> TableComponent.Companion.Sorting.ASC
-                                    }
-                                } handledBy sortDirection.update
+                            sortDirection.data.render { sorting ->
+                                (::div.styled(TableComponent.sorterStyle) {}){
+                                    icon({
+                                        TableComponent.sortDirectionIcon()
+                                        if (sorting == TableComponent.Companion.Sorting.ASC) {
+                                            TableComponent.sortDirectionSelected()
+                                        }
+                                    }) { fromTheme { triangleUp } }
+                                    icon({
+                                        TableComponent.sortDirectionIcon()
+                                        if (sorting == TableComponent.Companion.Sorting.DESC) {
+                                            TableComponent.sortDirectionSelected()
+                                        }
+                                    }) { fromTheme { triangleDown } }
+                                    clicks.events.map {
+                                        when (sorting) {
+                                            TableComponent.Companion.Sorting.ASC -> TableComponent.Companion.Sorting.DESC
+                                            TableComponent.Companion.Sorting.DESC -> TableComponent.Companion.Sorting.NONE
+                                            else -> TableComponent.Companion.Sorting.ASC
+                                        }
+                                    } handledBy sortDirection.update
+                                }
                             }
                         }
                     }
