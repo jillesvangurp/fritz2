@@ -15,7 +15,8 @@ include(
     "lenses-annotation-processor",
     "test-server",
     "styling",
-    "components"
+    "components",
+    "datatable"
 )
 
 enableFeaturePreview("GRADLE_METADATA")

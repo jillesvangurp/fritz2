@@ -1,9 +1,12 @@
 import dev.fritz2.binding.RootStore
 import dev.fritz2.binding.storeOf
 import dev.fritz2.components.*
-import dev.fritz2.components.model.*
+import dev.fritz2.components.model.Address
+import dev.fritz2.components.model.Person
 import dev.fritz2.dom.html.Div
 import dev.fritz2.dom.html.RenderContext
+import dev.fritz2.dom.html.renderElement
+import dev.fritz2.dom.mount
 import dev.fritz2.identification.uniqueId
 import dev.fritz2.lenses.Lens
 import dev.fritz2.lenses.buildLens
@@ -246,4 +249,17 @@ fun RenderContext.tableDemo(): Div {
             sorter = NaiveSorter()
         }
     }
+}
+
+
+@ExperimentalCoroutinesApi
+fun main() {
+    renderElement { ->
+        themeProvider {
+            themes { themes }
+            items {
+                tableDemo()
+            }
+        }
+    }.mount("target")
 }
