@@ -7,6 +7,7 @@ import dev.fritz2.components.validation.Severity
 import dev.fritz2.dom.html.RenderContext
 import dev.fritz2.styling.StyleClass
 import dev.fritz2.styling.params.BasicParams
+import dev.fritz2.styling.params.BoxParams
 import dev.fritz2.styling.params.Style
 import dev.fritz2.styling.params.styled
 import dev.fritz2.styling.theme.*
@@ -51,7 +52,7 @@ import kotlinx.coroutines.flow.flowOf
  * ```
  */
 @ComponentMarker
-class AlertComponent {
+open class AlertComponent : Component<Unit> {
 
     companion object {
         private const val accentDecorationThickness = "4px"
@@ -109,16 +110,16 @@ class AlertComponent {
 
     fun content(value: String) = content(flowOf(value))
 
-    fun show(
-        renderContext: RenderContext,
-        styling: BasicParams.() -> Unit = {},
-        baseClass: StyleClass? = null,
-        id: String? = null,
-        prefix: String = "alert",
+    override fun render(
+        context: RenderContext,
+        styling: BoxParams.() -> Unit,
+        baseClass: StyleClass?,
+        id: String?,
+        prefix: String,
     ) {
         val styles = variantStyles
 
-        renderContext.apply {
+        context.apply {
             (::div.styled(baseClass = baseClass, id = id, prefix = prefix) {
                 styling()
                 display { flex }
@@ -193,7 +194,9 @@ fun RenderContext.alert(
     id: String? = null,
     prefix: String = "alert",
     build: AlertComponent.() -> Unit,
-) = AlertComponent().apply(build).show(this, styling, baseClass, id, prefix)
+) {
+    AlertComponent().apply(build).render(this, styling, baseClass, id, prefix)
+}
 
 /**
  * Creates and alert and returns a handler that displays it in a toast message when invoked.
@@ -248,7 +251,7 @@ fun RenderContext.showAlertToast(
     showToast {
         toastBuild()
         content {
-            alert.show(
+            alert.render(
                 this,
                 styling = {
                     styling()
